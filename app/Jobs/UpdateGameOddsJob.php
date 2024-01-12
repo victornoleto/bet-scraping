@@ -7,6 +7,7 @@ use App\Models\Game;
 use App\Models\Odd;
 use App\Models\OddHistory;
 use App\Traits\WebScrapingTrait;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,39 +29,64 @@ class UpdateGameOddsJob implements ShouldQueue
 
     public function handle(): void
     {
-        $odds = $this->getBookmakersOdds();
+        try {
 
-        foreach ($odds as $odd) {
+            $odds = $this->getBookmakersOdds();
 
-            $bookmakerName = $odd[0];
-            $odds = $odd[1];
-
-            $bookmaker = Bookmaker::firstOrCreate([
-                'name' => $bookmakerName
-            ]);
+            usleep(250); // Dormir por alguns milisegundos para não sobrecarregar o servidor
+    
+            foreach ($odds as $odd) {
+    
+                $bookmakerName = $odd[0];
+                $odds = $odd[1];
+    
+                $bookmaker = Bookmaker::firstOrCreate([
+                    'name' => $bookmakerName
+                ]);
+                
+                $oddsData = [
+                    'home_odd' => $odds[0],
+                    'away_odd' => $odds[1],
+                    'draw_odd' => $odds[2] ?? null
+                ];
+    
+                $this->log('debug', $bookmakerName, $oddsData);
+    
+                $odd = Odd::updateOrCreate(
+                    [
+                        'game_id' => $this->game->id,
+                        'bookmaker_id' => $bookmaker->id
+                    ],
+                    $oddsData
+                );
+    
+                OddHistory::create(
+                    array_merge($oddsData, [
+                        'odd_id' => $odd->id,
+                        'created_at' => $odd->updated_at
+                    ])
+                );
+            }
             
-            $oddsData = [
-                'home_odd' => $odds[0],
-                'away_odd' => $odds[1],
-                'draw_odd' => $odds[2] ?? null
-            ];
+        } catch (\Exception $e) {
 
-            $this->log('debug', 'Atualizando odds (bookmaker ' . $bookmakerName . ')', $oddsData);
+            $this->log('error', 'Erro ao atualizar odds', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
 
-            $odd = Odd::updateOrCreate(
-                [
-                    'game_id' => $this->game->id,
-                    'bookmaker_id' => $bookmaker->id
-                ],
-                $oddsData
-            );
+        if ($this->mustContinue()) {
 
-            OddHistory::create(
-                array_merge($oddsData, [
-                    'odd_id' => $odd->id,
-                    'created_at' => $odd->updated_at
-                ])
-            );
+            $refreshMinutes = env('ODDS_REFRESH_MINUTES', 10);
+
+            $this->log('debug', 'Atualizando odds novamente em ' . $refreshMinutes . ' minutos...');
+
+            UpdateGameOddsJob::dispatch($this->game)
+                ->delay(
+                    now()->addMinutes($refreshMinutes)
+                )
+                ->onQueue('odds');
         }
     }
 
@@ -111,8 +137,21 @@ class UpdateGameOddsJob implements ShouldQueue
         return $bookmakers;
     }
 
+    private function mustContinue(): bool
+    {
+        $date = new Carbon($this->game->date);
+
+        $stopOddsAfter = env('STOP_UPDATE_ODDS_AFTER', 90);
+
+        $date->addMinutes($stopOddsAfter);
+
+        $now = Carbon::now();
+
+        return $date->isAfter($now);
+    }
+
     private function log(string $channel, string $message, array $context = []): void
     {
-        Log::$channel('[GAME][' . $this->game->id . '] ' . $message, $context);
+        Log::$channel('[odds][' . $this->game->id . '] ' . $message, $context);
     }
 }

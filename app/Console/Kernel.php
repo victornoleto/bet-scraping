@@ -7,12 +7,15 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
-    /**
-     * Define the application's command schedule.
-     */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Baixar partidas de futebol (ligas populares) do dia seguinte
+        $schedule->command('app:get-daily-matches football --tomorrow=1')
+            ->daily();
+
+        // Baixar partidas de basquete (NBA) do dia seguinte
+        $schedule->command('app:get-daily-matches basketball --tomorrow=1')
+            ->daily();
     }
 
     /**

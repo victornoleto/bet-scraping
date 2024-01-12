@@ -1,66 +1,81 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Bet Scraping
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Instalação
 
-## About Laravel
+Após clonar o projeto na sua máquina, instale as dependências: `composer install`
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Copie o arquivo `.env.example` para `.env` e ajuste as configurações do banco de dados.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Execute o comando `php artisan migrate:fresh`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Configurar supervisor
 
-## Learning Laravel
+Basicamente há dois jobs na aplicação. Um para baixar as partidas e outro para baixar as odds.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+As partidas só precisam ser baixadas uma vez. Já as odds podem ser atualizadas em um intervalo configurado no arquivo `.env`, `ODDS_REFRESH_MINUTES` (usar valor em minutos).
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Para saber como instalar o supervisor, siga o tutorial: https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Criar arquivo para processar o download de partidas
 
-## Laravel Sponsors
+Dentro de `/etc/supervisor/conf.d` crie um arquivo `bet-scraping-matches.conf`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```
+[program:bet-scraping-matches.conf]
+process_name=%(program_name)s_%(process_num)02d
+command=php /diretorio/do/projeto/artisan queue:work --queue=matches
+autostart=false
+autorestart=false
+stopasgroup=true
+killasgroup=true
+user=victor
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/diretorio/do/projeto/storage/logs/matches-process.log
+stderr_logfile_maxbytes=10
+stderr_logfile_backups=5
+```
 
-### Premium Partners
+### Criar arquivo para processar o download de odds
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Dentro de `/etc/supervisor/conf.d` crie um arquivo `bet-scraping-matches.conf`
 
-## Contributing
+```
+[program:bet-scraping-odds.conf]
+process_name=%(program_name)s_%(process_num)02d
+command=php /diretorio/do/projeto/artisan queue:work --queue=odds
+autostart=false
+autorestart=false
+stopasgroup=true
+killasgroup=true
+user=victor
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/diretorio/do/projeto/storage/logs/odds-process.log
+stderr_logfile_maxbytes=10
+stderr_logfile_backups=5
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+> No arquivo `bet-scraping-odds` você até pode aumentar o número de processos para processar a fila, mas não é recomendado. Isso porque quanto mais processos simultâneos mais requisições ao servidor serão feitas e isso pode acarretar no erro `429 Too Many Requests`. 
 
-## Code of Conduct
+Atenção! Lembre de substituir `/diretorio/do/projeto` pelo caminho da raiz do seu projeto (onde o arquivo `artisan` está localizado).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Após criar os dois arquivos, reinicie o supervisor:
 
-## Security Vulnerabilities
+```
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl restart all
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Baixar partidas e odds
 
-## License
+Utilize o comando `php artisan app:get-daily-matches {sport?} {date?} {--popular-league-only}` para baixar as partidas.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Automaticamente após baixar uma partida, as odds começaram a serem atualizadas. Após as odds da partida serem atualizadas, ela será adicionada na fila novamente após `ODDS_REFRESH_MINUTES` minutos. Isso vai acontecer enquanto não se passarem `STOP_UPDATE_ODDS_AFTER` minutos após o começo da partida.
+
+> Exemplo: Para `ODDS_REFRESH_MINUTES=10` e `STOP_UPDATE_ODDS_AFTER=90` uma partida que começa às 12:00 terá as odds atualizadas de 10 em 10 minutos até às 13:30
+
+A aplicação está configurada (`app/Console/Kernel.php`) para baixar as partidas de futebol e basquete (das ligas populares) do dia seguinte. Para isso funcionar corretamente, [lembre-se de configurar corretamente o agendador de processos](https://laravel.com/docs/10.x/scheduling#running-the-scheduler).
+
+> Atenção! Após mudar uma configuração no arquivo `.env` lembre-se de reiniciar o supervisor!

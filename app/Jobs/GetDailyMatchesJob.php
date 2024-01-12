@@ -40,8 +40,8 @@ class GetDailyMatchesJob implements ShouldQueue
             $this->log('debug', 'Obtendo partidas da página ' . $page . '...');
 
             $pageMatches = $this->getMatchList($page, $this->popularLeagueOnly);
-            
-            $this->log('debug', 'Partidas obtidas: ' . count($pageMatches) . '.');
+
+            //$this->log('debug', 'Partidas obtidas: ' . count($pageMatches) . '.');
 
             if (empty($pageMatches)) {
                 break;
@@ -166,7 +166,6 @@ class GetDailyMatchesJob implements ShouldQueue
 
     private function getGame(array $data): Game
     {
-
         $game = Game::updateOrCreate(
             [
                 'oddspedia_id' => $data['oddspedia_id']
@@ -219,13 +218,13 @@ class GetDailyMatchesJob implements ShouldQueue
     private function log(string $channel, string $message, array $context = []): void
     {
         $preffixParts = [
-            'daily-matches',
+            'matches',
             $this->sport,
             $this->date,
         ];
 
         $preffixParts = array_map(function($str) {
-            return '[' . mb_strtoupper($str) . ']';
+            return '[' . mb_strtolower($str) . ']';
         }, $preffixParts);
 
         $preffix = implode('', $preffixParts);
