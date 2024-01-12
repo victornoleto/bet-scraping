@@ -53,7 +53,7 @@
 
                 <label for="" class="fw-bold">Proporção</label>
 
-                <input type="number" class="form-control" name="ratio" value={{ request()->get('ratio') }} />
+                <input type="number" step="any" class="form-control" name="ratio" value={{ request()->get('ratio') }} />
 
             </div>
 
