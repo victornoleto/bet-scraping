@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class Game extends Model
 {
@@ -12,20 +13,55 @@ class Game extends Model
 
     protected $guarded = [];
 
-    public function scopeGetPlausibleOdds(Builder $query, int $scale)
+    public function scopeGetPlausibleOdds(Builder $query, Request $request)
     {
         $query
-            ->where('date', '>=', date('Y-m-d'));
+            ->where('start_at', '>=', now());
 
         $query->join('odds', 'games.id', '=', 'odds.game_id')
             ->join('bookmakers', 'odds.bookmaker_id', '=', 'bookmakers.id');
 
-        $query->where(function($q) use ($scale) {
-            
-            $q->whereRaw("(home_odd * $scale) < away_odd")
-                ->orWhereRaw("(away_odd * $scale) < home_odd");
+        $ratio = $request->get('ratio') ?? 2;
+
+        $minOdd = $request->get('min_odd');
+
+        $maxOdd = $request->get('max_odd');
+
+        $query->where(function($q) use ($ratio, $minOdd, $maxOdd) {
+
+            $keys = [
+                'home_odd',
+                'away_odd',
+            ];
+
+            for ($i = 0; $i < 2; $i++) {
+
+                if ($i == 1) {
+                    $keys = array_reverse($keys);
+                }
+
+                list($a, $b) = $keys;
+
+                $q->orWhere(function($q1) use ($ratio, $minOdd, $maxOdd, $a, $b) {
+
+                    $q1->whereRaw("($a * $ratio) < $b");
+
+                    if ($minOdd) {
+                        $q1->where($a, '>=', $minOdd);
+                    }
+
+                    if ($maxOdd) {
+                        $q1->where($a, '<=', $maxOdd);
+                    }
+
+                });
+            }
 
         });
+
+        $selectedBookmakerIds = $request->get('bookmaker_id', [3]);
+
+        $query->where('bookmakers.id', $selectedBookmakerIds);
 
         $query->select(
             'games.*',
