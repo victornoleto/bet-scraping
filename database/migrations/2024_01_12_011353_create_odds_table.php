@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('game_id');
             $table->foreign('game_id')->references('id')->on('games');
-            $table->unsignedBigInteger('bookmarker_id');
-            $table->foreign('bookmarker_id')->references('id')->on('bookmarkers');
+            $table->unsignedBigInteger('bookmaker_id');
+            $table->foreign('bookmaker_id')->references('id')->on('bookmakers');
             $table->float('home_odd');
             $table->float('away_odd');
             $table->float('draw_odd')->nullable();

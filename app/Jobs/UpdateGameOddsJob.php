@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Bookmarker;
+use App\Models\Bookmaker;
 use App\Models\Game;
 use App\Models\Odd;
 use App\Models\OddHistory;
@@ -28,14 +28,14 @@ class UpdateGameOddsJob implements ShouldQueue
 
     public function handle(): void
     {
-        $odds = $this->getBookmarkersOdds();
+        $odds = $this->getBookmakersOdds();
 
         foreach ($odds as $odd) {
 
             $bookmakerName = $odd[0];
             $odds = $odd[1];
 
-            $bookmaker = Bookmarker::firstOrCreate([
+            $bookmaker = Bookmaker::firstOrCreate([
                 'name' => $bookmakerName
             ]);
             
@@ -50,7 +50,7 @@ class UpdateGameOddsJob implements ShouldQueue
             $odd = Odd::updateOrCreate(
                 [
                     'game_id' => $this->game->id,
-                    'bookmarker_id' => $bookmaker->id
+                    'bookmaker_id' => $bookmaker->id
                 ],
                 $oddsData
             );
@@ -64,7 +64,7 @@ class UpdateGameOddsJob implements ShouldQueue
         }
     }
 
-    private function getBookmarkersOdds(): array
+    private function getBookmakersOdds(): array
     {
         $contents = $this->getUrlContents($this->game->url);
     
