@@ -7,7 +7,7 @@ use GuzzleHttp\RequestOptions;
 
 trait WebScrapingTrait
 {
-    private function getUrlContents(string $url): string
+    private function getUrlContents(string $url, array $query = [], array $headers = []): string
     {
         $httpClient = new Client([
             RequestOptions::VERIFY => false,
@@ -15,7 +15,10 @@ trait WebScrapingTrait
             'base_uri' => 'https://oddspedia.com'
         ]);
 
-        $response = $httpClient->request('get', $url);
+        $response = $httpClient->request('get', $url, [
+            RequestOptions::QUERY => $query,
+            RequestOptions::HEADERS => $headers
+        ]);
 
         $contents = $response->getBody()->getContents();
 

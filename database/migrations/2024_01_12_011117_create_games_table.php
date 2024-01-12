@@ -15,8 +15,11 @@ return new class extends Migration {
             $table->string('home');
             $table->string('away');
             $table->string('url');
-            $table->date('date');
-            $table->time('time')->nullable();
+            $table->timestamp('start_at');
+            $table->string('sport');
+            $table->string('category');
+            $table->string('league');
+            $table->bigInteger('oddspedia_id');
             $table->timestamps();
         });
     }
