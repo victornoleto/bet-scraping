@@ -34,6 +34,8 @@ class UpdateGameOddsJob implements ShouldQueue
             $odds = $this->getBookmakersOdds();
 
             usleep(250); // Dormir por alguns milisegundos para não sobrecarregar o servidor
+
+            $oddsCreatedAt = now();
     
             foreach ($odds as $odd) {
     
@@ -63,7 +65,7 @@ class UpdateGameOddsJob implements ShouldQueue
                 OddHistory::create(
                     array_merge($oddsData, [
                         'odd_id' => $odd->id,
-                        'created_at' => $odd->updated_at
+                        'created_at' => $oddsCreatedAt
                     ])
                 );
             }
@@ -74,11 +76,13 @@ class UpdateGameOddsJob implements ShouldQueue
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            return;
         }
 
         if ($this->mustContinue()) {
 
-            $refreshMinutes = env('ODDS_REFRESH_MINUTES', 10);
+            $refreshMinutes = config('app.odds_refresh_minutes');
 
             $this->log('debug', 'Atualizando odds novamente em ' . $refreshMinutes . ' minutos...');
 
@@ -121,7 +125,8 @@ class UpdateGameOddsJob implements ShouldQueue
             foreach ($indexes as $index) {
 
                 if ($index === null) {
-                    $odds[] = null; continue;
+                    $odds[] = null;
+                    continue;
                 }
 
                 $oddElement = $oddElements->eq($index);
@@ -141,9 +146,9 @@ class UpdateGameOddsJob implements ShouldQueue
     {
         $date = new Carbon($this->game->date);
 
-        $stopOddsAfter = env('STOP_UPDATE_ODDS_AFTER', 90);
+        $stopUpdateOddsAfter = config('app.stop_update_odds_after');
 
-        $date->addMinutes($stopOddsAfter);
+        $date->addMinutes($stopUpdateOddsAfter);
 
         $now = Carbon::now();
 

@@ -16,10 +16,17 @@ return new class extends Migration {
             $table->foreign('game_id')->references('id')->on('games');
             $table->unsignedBigInteger('bookmaker_id');
             $table->foreign('bookmaker_id')->references('id')->on('bookmakers');
-            $table->float('home_odd');
-            $table->float('away_odd');
-            $table->float('draw_odd')->nullable();
-            $table->timestamps();
+            $table->unsignedBigInteger('betting_market_id');
+            $table->foreign('betting_market_id')->references('id')->on('betting_markets');
+            $table->string('period');
+            $table->string('alternative')->nullable();
+            $table->float('o1');
+            $table->float('o2');
+            $table->float('o3')->nullable();
+            $table->integer('status');
+            $table->float('payout');
+            $table->string('refresh_id');
+            $table->timestamp('refreshed_at');
         });
     }
 

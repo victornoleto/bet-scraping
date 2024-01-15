@@ -9,13 +9,8 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        // Baixar partidas de futebol (ligas populares) do dia seguinte
-        $schedule->command('app:get-daily-matches football --tomorrow=1')
-            ->daily();
-
-        // Baixar partidas de basquete (NBA) do dia seguinte
-        $schedule->command('app:get-daily-matches basketball --tomorrow=1')
-            ->daily();
+        $schedule->command('app:update-games --increment-days=7 --every-sport')
+            ->dailyAt('06:00');
     }
 
     /**

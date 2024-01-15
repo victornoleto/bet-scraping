@@ -13,6 +13,13 @@ class Game extends Model
 
     protected $guarded = [];
 
+    public function getMatchKey(): string
+    {
+        $parts = explode('-', $this->url);
+
+        return end($parts);
+    }
+
     public function scopeGetPlausibleOdds(Builder $query, Request $request)
     {
         $query
@@ -27,7 +34,7 @@ class Game extends Model
 
         $maxOdd = $request->get('max_odd');
 
-        $query->where(function($q) use ($ratio, $minOdd, $maxOdd) {
+        $query->where(function ($q) use ($ratio, $minOdd, $maxOdd) {
 
             $keys = [
                 'home_odd',
@@ -42,7 +49,7 @@ class Game extends Model
 
                 list($a, $b) = $keys;
 
-                $q->orWhere(function($q1) use ($ratio, $minOdd, $maxOdd, $a, $b) {
+                $q->orWhere(function ($q1) use ($ratio, $minOdd, $maxOdd, $a, $b) {
 
                     $q1->whereRaw("($a * $ratio) < $b");
 

@@ -24,8 +24,7 @@ class GetDailyMatchesJob implements ShouldQueue
         private string $sport,
         private string $date,
         private bool $popularLeagueOnly = true
-    )
-    {
+    ) {
         //
     }
 
@@ -58,8 +57,8 @@ class GetDailyMatchesJob implements ShouldQueue
 
             #$this->log('debug', 'Iniciando captura de odds', $game->toArray());
 
-            UpdateGameOddsJob::dispatch($game)
-                ->onQueue('odds');
+            /* UpdateGameOddsJob::dispatch($game)
+                ->onQueue('odds'); */
         }
     }
 
@@ -196,6 +195,8 @@ class GetDailyMatchesJob implements ShouldQueue
 
         $matches = [];
 
+        dd($matchList[0]);
+
         foreach ($matchList as $row) {
 
             $match = [
@@ -223,7 +224,7 @@ class GetDailyMatchesJob implements ShouldQueue
             $this->date,
         ];
 
-        $preffixParts = array_map(function($str) {
+        $preffixParts = array_map(function ($str) {
             return '[' . mb_strtolower($str) . ']';
         }, $preffixParts);
 

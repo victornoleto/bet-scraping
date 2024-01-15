@@ -12,14 +12,19 @@ return new class extends Migration {
     {
         Schema::create('games', function (Blueprint $table) {
             $table->id();
-            $table->string('home');
-            $table->string('away');
+            $table->unsignedBigInteger('sport_id');
+            $table->foreign('sport_id')->references('id')->on('sports');
+            $table->bigInteger('server_id');
+            $table->string('ht'); // home team
+            $table->unsignedBigInteger('ht_server_id');
+            $table->string('at'); // away team
+            $table->unsignedBigInteger('at_server_id');
             $table->string('url');
-            $table->timestamp('start_at');
-            $table->string('sport');
+            $table->string('key');
+            $table->timestamp('match_time');
             $table->string('category');
             $table->string('league');
-            $table->bigInteger('oddspedia_id');
+            $table->string('last_odds_refresh_id')->nullable();
             $table->timestamps();
         });
     }

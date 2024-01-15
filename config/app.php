@@ -185,4 +185,6 @@ return [
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
+    'odds_refresh_minutes' => env('ODDS_REFRESH_MINUTES', 1),
+    'match_keepalive_minutes' => env('MATCH_KEEPALIVE_MINUTES', 90),
 ];
