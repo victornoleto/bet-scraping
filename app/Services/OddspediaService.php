@@ -151,7 +151,7 @@ class OddspediaService
             $response = $e->getResponse();
 
             $req->status_code = $response->getStatusCode();
-            $req->error = $response->getBody()->getContents();
+            $req->error = $response->getBody()->getContents() ?? $e->getMessage();
         }
 
         $req->finished_at = date('Y-m-d H:i:s');
