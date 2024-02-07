@@ -6,6 +6,30 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Bet Scraping</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=JetBrains+Mono">
+    <style>
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            --bs-body-font-size: 13px;
+        }
+
+        .table-responsive {
+            max-height: calc(100vh - 3rem);
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background-color: #fff !important;
+            box-shadow: inset 0 -2px 0 var(--bs-border-color) !important;
+            border-top: none;
+            border-bottom: none;
+            padding: 1rem 0.5rem !important;
+        }
+
+    </style>
 </head>
 <body>
 

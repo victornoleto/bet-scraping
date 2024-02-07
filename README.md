@@ -1,3 +1,5 @@
+```git remote | xargs -L1 git push --all```
+
 # Instruções atualizadas
 
 composer install

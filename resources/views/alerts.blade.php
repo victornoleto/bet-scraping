@@ -15,7 +15,7 @@
 
     </div>
 
-    <div id="filters">
+    <div id="filters" class="mb-3 pb-3 border-bottom border-3">
 
         <div class="form-group mb-3">
             
@@ -76,9 +76,9 @@
 
     </div>
 
-    <div class="table-responsive border-top pt-3 mt-3 border-2">
+    <div class="table-responsive">
 
-        <table class="table table-striped align-middle">
+        <table class="table table-striped align-middle mb-0">
     
             <thead>
                 <tr>
@@ -131,7 +131,7 @@
                             
                             <td>
                                 <span>{{ $marketSubname }}</span>
-                                <small class="d-block mt-1 opacity-50">{{ $alert->betting_market_name }}</small>
+                                <small class="d-block opacity-50">{{ $alert->betting_market_name }}</small>
                             </td>
                             
                         @else
@@ -169,7 +169,7 @@
 
             $('table').DataTable({
                 paging: false,
-                searching: false,
+                searching: true,
                 info: false,
                 //order: [[ 8, "desc" ]]
             });
