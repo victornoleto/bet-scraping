@@ -8,39 +8,49 @@ use App\Models\Game;
 use App\Services\OddspediaFootballService;
 use App\Services\OddspediaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TestController extends Controller
 {
     public function index(Request $request)
     {
-        /* $bookmakers = Bookmaker::all();
+        $service = new OddspediaService();
 
-        $ratio = $request->get('ratio', 2);
+        $games = $service->getSportGames(
+            'football',
+            now()->format('Y-m-d'),
+            false
+        );
 
-        $odds = Game::getPlausibleOdds($request)
-            ->get()
-            ->toArray();
-
-        return view('plausible-odds', [
-            'bookmakers' => $bookmakers,
-            'odds' => $odds,
-        ]); */
+        dd($games);
     }
 
-    public function test()
+    public function tips()
     {
-        /* $mainService = new OddspediaService();
+        $service = new OddspediaService();
+        /*
+        $tips = $service->getTipsByTipster();
 
-        $matches = $mainService->getSportMatches('football', '2024-01-15', false);
+        dd($tips); */
 
-        dd($matches); */
+        /* $tipsJson = Storage::get('tips-domadores-ciub-202401171610.json');
 
-        $game = Game::find(60);
+        $tips = json_decode($tipsJson, true);
+        */
 
-        $service = new OddspediaFootballService($game);
+        $tips = $service->getTipsByConsensus(true);
 
-        $odds = $service->getTotalGoalsOdds();
+        $tips = array_filter($tips, function ($tip) {
 
-        dd($odds);
+            $md = $tip['match']['md'];
+
+            return
+                strpos($md, '2024-01-20') !== false;
+
+        });
+
+        return view('consensus-tips', [
+            'tips' => $tips,
+        ]);
     }
 }

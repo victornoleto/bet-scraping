@@ -16,6 +16,7 @@ class UpdateGameOddsCommand extends Command
     protected $signature = 'app:update-game-odds';
 
     private string $refreshId;
+    private string $refreshedAt;
 
     private array $enabledBookmakers = [];
 
@@ -23,7 +24,8 @@ class UpdateGameOddsCommand extends Command
 
     public function handle()
     {
-        $this->refreshId = uniqid();
+        //$this->refreshId = uniqid();
+        $this->refreshedAt = now()->format('Y-m-d H:i:s');
 
         $games = Game::query()
             ->where('match_time', '>=', now()->subMinutes(90))
@@ -40,6 +42,8 @@ class UpdateGameOddsCommand extends Command
             ->where('enabled', true)
             ->get()
             ->toArray();
+
+        $mainT0 = microtime(true);
 
         foreach ($games as $index => $game) {
 
@@ -58,6 +62,12 @@ class UpdateGameOddsCommand extends Command
 
             $this->log('info', $message, [$game->id]);
         }
+
+        $elapsedTotal = round(microtime(true) - $mainT0, 2);
+
+        $message = sprintf('Jogos atualizados em %s segundos', $elapsedTotal);
+
+        $this->log('info', $message);
     }
 
     private function refreshGameOdds(Game $game): void
@@ -94,10 +104,7 @@ class UpdateGameOddsCommand extends Command
 
                 $elapsedSecs = round(microtime(true) - $t0, 2);
 
-                $message = sprintf(
-                    'Odds atualizadas em %s segundos',
-                    $elapsedSecs,
-                );
+                $message = sprintf('Odds atualizadas em %s segundos', $elapsedSecs);
 
                 $this->log('info', $message, [$game->id, $market['name']]);
 
@@ -105,7 +112,6 @@ class UpdateGameOddsCommand extends Command
                     ->onQueue('game-odds-analysis'); */
 
             } catch (\Exception $e) {
-                dd($e);
                 $this->log('error', $e->getMessage(), [$game->id, $market['id']]);
             }
         }
@@ -129,8 +135,9 @@ class UpdateGameOddsCommand extends Command
             'alternative' => $data['alternative'],
             'status' => $data['status'],
             'payout' => $data['payout'],
-            'refresh_id' => $this->refreshId,
-            'refreshed_at' => now(),
+            //'refresh_id' => $this->refreshId,
+            'refreshed_at' => $this->refreshedAt,
+            'created_at' => now()
         ];
 
         foreach ($data['odds'] as $index => $value) {

@@ -25,8 +25,8 @@ return new class extends Migration {
             $table->float('o3')->nullable();
             $table->integer('status');
             $table->float('payout');
-            $table->string('refresh_id');
-            $table->timestamp('refreshed_at');
+            $table->timestamp('refreshed_at')->index();
+            $table->timestamp('created_at');
         });
     }
 

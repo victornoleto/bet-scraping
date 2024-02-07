@@ -123,6 +123,94 @@ class OddspediaService
         return [];
     }
 
+    public function getTipsByTipster(string $userId = 'domadores-ciub', string $status = 'active,pending', bool $cache = false): array
+    {
+        $url = '/api/v1/getTipsByTipster';
+
+        $query = [
+            'perPage' => 50,
+            'sortBy' => 'date',
+            'order' => 'DESC',
+            'userId' => $userId,
+            'status' => $status,
+            'showFilters' => '0',
+            'language' => 'br',
+        ];
+
+        $headers = [
+            'referer' => self::$baseUrl . '/u/' . $userId,
+        ];
+
+        return $this->getTips($url, $query, $headers, $cache);
+    }
+
+    public function getTipsByConsensus(bool $cache = false): array
+    {
+        $url = '/api/v1/getTipsByConsensus';
+
+        $query = [
+            'q' => '',
+            'perPage' => 50,
+            'sortBy' => 'consensus_percentage',
+            'order' => 'DESC',
+            'sportId' => '',
+            'leagueId' => '',
+            'matchId' => '',
+            'marketId' => '',
+            'consensusPercentage' => '51.00,100.00',
+            'tipsAmount' => '3.00,100000.00',
+            'timePeriod' => 'all',
+            'tipsterRank' => 'all',
+            'onlyFollowedUsers' => 'false',
+            'wettsteuer' => '0',
+            'geoCode' => 'BR',
+            'geoState' => '',
+            'language' => 'en',
+        ];
+
+        $headers = [
+            'referer' => self::$baseUrl . '/tips'
+        ];
+
+        return $this->getTips($url, $query, $headers, $cache);
+    }
+
+    private function getTips(string $url, array $query, array $headers, bool $cache = false): array
+    {
+        $hash = md5($url . '_'. json_encode($query));
+
+        $cacheFilename = 'tips-' . $hash . '_' . date('YmdH') . '.json';
+
+        if ($cache && Storage::exists($cacheFilename)) {
+            return json_decode(Storage::get($cacheFilename), true);
+        }
+
+        $page = 1;
+
+        $tips = [];
+
+        while (true) {
+
+            $query['page'] = $page;
+
+            $contents = $this->request($url, $query, $headers);
+
+            $result = json_decode($contents, true);
+
+            $tips = array_merge($tips, $result['data']);
+
+            if ($page == $result['total_pages']) {
+                break;
+            }
+
+            $page++;
+        }
+
+        Storage::put($cacheFilename, json_encode($tips));
+
+        return $tips;
+    }
+
     public function request(string $url, array $query = [], array $headers = []): string
     {
         $sleepTime = $this->checkPreRequestSleepTime();

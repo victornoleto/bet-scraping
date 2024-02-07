@@ -16,10 +16,10 @@ class BettingMarketSeeder extends Seeder
     {
         $data = [
             SportEnum::football => [
-                'Full Time Result' => 1,
+                //'Full Time Result' => 1,
                 'Total Goals' => 4,
                 //'Asian Handicap' => 3,
-                'Both Teams To Score' => 11,
+                //'Both Teams To Score' => 11,
                 //'Total Corners' => 63,
                 //'Odd or Even' => 10,
             ],
