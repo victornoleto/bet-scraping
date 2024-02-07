@@ -1,12 +1,12 @@
 select
+	q2.refreshed_at,
 	g.id as game_id, g.server_id,
 	g.sport_id, g.category, g.league,
 	g.ht, g.at, g.match_time,
 	bm.name as betting_market, q2.period, q2.alternative,
 	q2.o1, b1.name as o1_bookmaker_name,
 	q2.o2, b2.name as o2_bookmaker_name,
-	(((q2.o1*q2.o2)/(q2.o1+q2.o2)) - 1) * 100 as profit_percentage,
-	q2.refreshed_at
+	(((q2.o1*q2.o2)/(q2.o1+q2.o2)) - 1) * 100 as profit_percentage
 from (
 	select
 		game_id,
@@ -41,4 +41,10 @@ join betting_markets as bm on bm.id = q2.betting_market_id
 join bookmakers as b1 on b1.id = q2.o1_bookmaker_id
 join bookmakers as b2 on b2.id = q2.o2_bookmaker_id
 where
-	q2.o1 >= 2 and q2.o2 >= 2
+	(
+		q2.o2 > (q2.o1 / (q2.o1 - 1)) or
+		q2.o1 > (q2.o2 / (q2.o2 - 1))
+	) and
+	--b1.user_rating >= 4 and b2.user_rating >= b1.user_rating
+	b1.rating >= 8 and b2.rating >= b1.rating
+order by q2.refreshed_at desc

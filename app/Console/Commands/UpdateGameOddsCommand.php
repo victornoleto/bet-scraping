@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class UpdateGameOddsCommand extends Command
 {
-    protected $signature = 'app:update-game-odds';
+    protected $signature = 'app:update-game-odds {--loop}';
 
     private string $refreshId;
     private string $refreshedAt;
@@ -24,50 +24,57 @@ class UpdateGameOddsCommand extends Command
 
     public function handle()
     {
-        //$this->refreshId = uniqid();
-        $this->refreshedAt = now()->format('Y-m-d H:i:s');
+        while (true) {
 
-        $games = Game::query()
-            ->where('match_time', '>=', now()->subMinutes(90))
-            ->orderBy('sport_id')
-            ->orderBy('match_time')
-            ->get();
+            //$this->refreshId = uniqid();
+            $this->refreshedAt = now()->format('Y-m-d H:i:s');
+    
+            $games = Game::query()
+                ->where('match_time', '>=', now()->subMinutes(90))
+                ->orderBy('sport_id')
+                ->orderBy('match_time')
+                ->get();
+    
+            $this->enabledBookmakers = Bookmaker::query()
+                ->where('enabled', true)
+                ->get()
+                ->toArray();
+    
+            $this->enabledBettingMarkets = BettingMarket::query()
+                ->where('enabled', true)
+                ->get()
+                ->toArray();
+    
+            $mainT0 = microtime(true);
+    
+            foreach ($games as $index => $game) {
+    
+                $t0 = microtime(true);
+    
+                $this->refreshGameOdds($game);
+    
+                $elapsedSecs = round(microtime(true) - $t0, 2);
+    
+                $message = sprintf(
+                    'Odds atualizadas em %s segundos (%s/%s)',
+                    $elapsedSecs,
+                    $index + 1,
+                    $games->count()
+                );
+    
+                $this->log('info', $message, [$game->id]);
+            }
+    
+            $elapsedTotal = round(microtime(true) - $mainT0, 2);
+    
+            $message = sprintf('Jogos atualizados em %s segundos', $elapsedTotal);
+    
+            $this->log('info', $message);
 
-        $this->enabledBookmakers = Bookmaker::query()
-            ->where('enabled', true)
-            ->get()
-            ->toArray();
-
-        $this->enabledBettingMarkets = BettingMarket::query()
-            ->where('enabled', true)
-            ->get()
-            ->toArray();
-
-        $mainT0 = microtime(true);
-
-        foreach ($games as $index => $game) {
-
-            $t0 = microtime(true);
-
-            $this->refreshGameOdds($game);
-
-            $elapsedSecs = round(microtime(true) - $t0, 2);
-
-            $message = sprintf(
-                'Odds atualizadas em %s segundos (%s/%s)',
-                $elapsedSecs,
-                $index + 1,
-                $games->count()
-            );
-
-            $this->log('info', $message, [$game->id]);
+            if (!$this->option('loop')) {
+                break;
+            }
         }
-
-        $elapsedTotal = round(microtime(true) - $mainT0, 2);
-
-        $message = sprintf('Jogos atualizados em %s segundos', $elapsedTotal);
-
-        $this->log('info', $message);
     }
 
     private function refreshGameOdds(Game $game): void
