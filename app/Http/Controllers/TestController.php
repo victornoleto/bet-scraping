@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\GetNbaCurrentWeekOddsJob;
+use App\Models\Alert;
 use App\Models\Bookmaker;
 use App\Models\Game;
 use App\Services\OddspediaFootballService;
@@ -14,15 +15,9 @@ class TestController extends Controller
 {
     public function index(Request $request)
     {
-        $service = new OddspediaService();
+        $alerts = Alert::getUnsavedAlerts(7, 1, '2024-02-07 13:47:44');
 
-        $games = $service->getSportGames(
-            'football',
-            now()->format('Y-m-d'),
-            false
-        );
-
-        dd($games);
+        dd($alerts);
     }
 
     public function tips()

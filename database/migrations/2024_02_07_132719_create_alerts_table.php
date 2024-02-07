@@ -19,12 +19,12 @@ return new class extends Migration
             $table->foreign('betting_market_id')->references('id')->on('betting_markets');
             $table->string('period');
             $table->string('alternative')->nullable();
-            $table->unsignedBigInteger('o1_id');
+            $table->unsignedBigInteger('o1_id')->index();
             $table->foreign('o1_id')->references('id')->on('odds');
             $table->unsignedBigInteger('o1_bookmaker_id');
             $table->foreign('o1_bookmaker_id')->references('id')->on('bookmakers');
             $table->float('o1');
-            $table->unsignedBigInteger('o2_id');
+            $table->unsignedBigInteger('o2_id')->index();
             $table->foreign('o2_id')->references('id')->on('odds');
             $table->unsignedBigInteger('o2_bookmaker_id');
             $table->foreign('o2_bookmaker_id')->references('id')->on('bookmakers');

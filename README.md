@@ -1,3 +1,17 @@
+# Instruções atualizadas
+
+composer install
+
+php artisan migrate:fresh --seed
+
+-- Para testar mudar queue connection para sync
+
+Baixar partidas de futebol do dia:
+php artisan app:update-games football
+
+Atualizar odds das partidas:
+php artisan app:update-game-odds --loop
+
 # Bet Scraping
 
 ## Instalação

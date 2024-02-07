@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\CheckNewAlertsJob;
 use App\Jobs\GameOddsAnalysisJob;
 use App\Models\BettingMarket;
 use App\Models\Bookmaker;
@@ -108,6 +109,9 @@ class UpdateGameOddsCommand extends Command
                 foreach ($oddsList as $row) {
                     $this->saveGameBookmakerOdds($game->id, $market['id'], $row);
                 }
+
+                CheckNewAlertsJob::dispatch($game->id, $market['id'], $this->refreshedAt)
+                    ->onQueue('check-new-alerts');
 
                 $elapsedSecs = round(microtime(true) - $t0, 2);
 
