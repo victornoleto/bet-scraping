@@ -25,3 +25,15 @@ if (!function_exists('getGameKeyFromUrl')) {
         return $key;
     }
 }
+
+if (!function_exists('utcToTz'))
+{
+    function utcToTz(string $utc, string $tz): string
+    {
+        $utc = new DateTime($utc, new DateTimeZone('UTC'));
+
+        $utc->setTimezone(new DateTimeZone($tz));
+
+        return $utc->format('Y-m-d H:i:s');
+    }
+}

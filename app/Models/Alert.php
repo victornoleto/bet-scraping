@@ -59,6 +59,8 @@ class Alert extends Model
                 and o2.id != o1.id
                 and o1.bookmaker_id in ($enabledBookmakersInSql)
                 and o2.bookmaker_id in ($enabledBookmakersInSql)
+                and o1.period = 'Full Time'
+                and o1.alternative like '%.5'
             where
                 o1.o1 > 1 and o1.o2 > 1
                 and o2.o1 > 1 and o2.o2 > 1
@@ -97,6 +99,12 @@ class Alert extends Model
             'b2.name as o2_bookmaker_name', 'b2.slug as o2_bookmaker_slug'
         );
 
-        $query->where('refreshed_at', '>=', now()->subMinutes(60));
+        $query->addSelect(
+            DB::raw('rank() over (partition by game_id, betting_market_id, period, alternative order by refreshed_at desc) as rank')
+        );
+
+        /* $query
+            ->where('g.match_time', '>=', now()->addMinutes(60))
+            ->where('refreshed_at', '>=', now()->subMinutes(60)); */
     }
 }

@@ -272,7 +272,7 @@ class OddspediaService
                 'at_server_id' => $row['at_id'],
                 'url' => $row['uri'],
                 'key' => getGameKeyFromUrl($row['uri']),
-                'match_time' => $row['md'],
+                'match_time' => utcToTz($row['md'], 'America/Sao_Paulo'),
                 'category' => $categoryList[$row['category_id']]['slug'],
                 'league' => $leagueList[$row['league_id']]['slug'],
             ];
