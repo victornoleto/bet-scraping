@@ -171,7 +171,7 @@
                 paging: false,
                 searching: true,
                 info: false,
-                //order: [[ 8, "desc" ]]
+                order: [[ 8, "desc" ]]
             });
 
             function updateBetAmounts() {
