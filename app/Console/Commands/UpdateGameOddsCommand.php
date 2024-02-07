@@ -10,6 +10,7 @@ use App\Models\Game;
 use App\Models\Odd;
 use App\Services\OddspediaService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class UpdateGameOddsCommand extends Command
@@ -31,11 +32,11 @@ class UpdateGameOddsCommand extends Command
             $this->refreshedAt = now()->format('Y-m-d H:i:s');
     
             $games = Game::query()
-                ->where('match_time', '>=', now()->subMinutes(90))
+                ->whereRaw("match_time > now() - interval '1 hour'")
                 ->orderBy('sport_id')
                 ->orderBy('match_time')
                 ->get();
-    
+
             $this->enabledBookmakers = Bookmaker::query()
                 ->where('enabled', true)
                 ->get()
@@ -115,12 +116,9 @@ class UpdateGameOddsCommand extends Command
 
                 $elapsedSecs = round(microtime(true) - $t0, 2);
 
-                $message = sprintf('Odds atualizadas em %s segundos', $elapsedSecs);
+                /* $message = sprintf('Odds atualizadas em %s segundos', $elapsedSecs);
 
-                $this->log('info', $message, [$game->id, $market['name']]);
-
-                /* GameOddsAnalysisJob::dispatch($game, $market, $this->refreshId)
-                    ->onQueue('game-odds-analysis'); */
+                $this->log('info', $message, [$game->id, $market['name']]); */
 
             } catch (\Exception $e) {
                 $this->log('error', $e->getMessage(), [$game->id, $market['id']]);

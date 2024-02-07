@@ -235,11 +235,8 @@ class OddspediaService
             $req->status_code = Response::HTTP_OK;
             
         } catch (ClientException $e) {
-
-            $response = $e->getResponse();
-
-            $req->status_code = $response->getStatusCode();
-            $req->error = $response->getBody()->getContents() ?? $e->getMessage();
+            $req->status_code = $e->getResponse()->getStatusCode();
+            $req->error = $e->getMessage();
         }
 
         $req->finished_at = date('Y-m-d H:i:s');

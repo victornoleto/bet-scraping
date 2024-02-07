@@ -38,8 +38,6 @@ class CheckNewAlertsJob implements ShouldQueue
             $this->refreshedAt
         );
 
-        $newAlertIds = [];
-
         foreach ($unsavedAlerts as $data) {
 
             $alert = Alert::where([
@@ -67,10 +65,6 @@ class CheckNewAlertsJob implements ShouldQueue
                 'refreshed_at' => $this->refreshedAt,
                 'created_at' => now()
             ]);
-
-            $newAlertIds[] = $alert->id;
         }
-
-        Log::debug('[ALERTS] Novos alertas criados: ' . count($newAlertIds));
     }
 }

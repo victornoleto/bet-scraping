@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Jobs\AlertNotifyJob;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class Alert extends Model
@@ -77,5 +79,24 @@ class Alert extends Model
     public function mustNotify(): bool
     {
         return $this->profit_percentage > 2;
+    }
+
+    public function scopeSearch(Builder $query, Request $request): void
+    {
+        $query
+            ->join('games as g', 'g.id', '=', 'alerts.game_id')
+            ->join('betting_markets as bm', 'bm.id', '=', 'alerts.betting_market_id')
+            ->join('bookmakers as b1', 'b1.id', '=', 'alerts.o1_bookmaker_id')
+            ->join('bookmakers as b2', 'b2.id', '=', 'alerts.o2_bookmaker_id');
+
+        $query->select(
+            'alerts.*',
+            'g.ht', 'g.at', 'g.category', 'g.league', 'g.match_time',
+            'bm.name as betting_market_name',
+            'b1.name as o1_bookmaker_name', 'b1.slug as o1_bookmaker_slug',
+            'b2.name as o2_bookmaker_name', 'b2.slug as o2_bookmaker_slug'
+        );
+
+        $query->where('refreshed_at', '>=', now()->subMinutes(60));
     }
 }

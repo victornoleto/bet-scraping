@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [TestController::class, 'index']);
 Route::get('/tips', [TestController::class, 'tips']);
+
+Route::get('/alerts', [AlertController::class, 'index']);

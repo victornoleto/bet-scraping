@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class UpdateGamesCommand extends Command
 {
-    protected $signature = 'app:update-games {sport?} {--date=} {--end-date=} {--increment-days=0} {--popular-league-only=0} {--sync=0} {--every-sport=0}';
+    protected $signature = 'app:update-games {sport?} {--date=} {--end-date=} {--increment-days=0} {--popular-league-only=0} {--every-sport=0}';
 
     protected $description = 'Atualizar jogos de um esporte';
 
@@ -34,12 +34,7 @@ class UpdateGamesCommand extends Command
 
                 $job = new UpdateGamesJob(...$args);
 
-                if ($this->option('sync')) {
-                    $job->handle();
-
-                } else {
-                    dispatch($job->onQueue('update-games'));
-                }
+                dispatch_sync($job);
             }
         }
     }

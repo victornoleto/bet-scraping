@@ -30,6 +30,8 @@ class UpdateGamesJob implements ShouldQueue
 
         $t0 = microtime(true);
 
+        $this->log('debug', 'Baixando partidas...');
+
         $games = $service->getSportGames(
             $this->sport,
             $this->date,
@@ -58,11 +60,7 @@ class UpdateGamesJob implements ShouldQueue
             $game->save();
 
             if ($game->wasRecentlyCreated) {
-                
                 $newOnes++;
-
-                // Dispatch job to update game odds
-                // TODO ...
             }
         }
 

@@ -9,8 +9,8 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:update-games --increment-days=7 --every-sport')
-            ->dailyAt('06:00');
+        $schedule->command('app:update-games football')
+            ->dailyAt('00:01');
     }
 
     /**
